@@ -129,6 +129,7 @@ class AddClientActivity : AppCompatActivity() {
     fun findClientCEP(cep: String){
         clientViewModel = ClientViewModel(application)
         clientViewModel!!.findCEP(cep)
+        TODO("finalizar retrofit")
 
 //        editLogradouro.setText(cep.getLogradouro())
 //        editBairro.setText(cep.getBairro())
