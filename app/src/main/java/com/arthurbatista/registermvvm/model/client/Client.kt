@@ -1,4 +1,4 @@
-package com.arthurbatista.registermvvm.model
+package com.arthurbatista.registermvvm.model.client
 
 import android.arch.persistence.room.ColumnInfo
 import android.arch.persistence.room.Entity
@@ -24,7 +24,5 @@ class Client(
     @ColumnInfo(name = "cidade")
     var cidade: String?,
     @ColumnInfo(name = "estado")
-    var estado: String?,
-    @ColumnInfo(name = "nascimento")
-    var nascimento: String?
+    var estado: String?
 ) : Serializable

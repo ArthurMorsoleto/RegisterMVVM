@@ -3,16 +3,23 @@ package com.arthurbatista.registermvvm.viewmodel
 import android.app.Application
 import android.arch.lifecycle.LiveData
 import android.os.AsyncTask
-import com.arthurbatista.registermvvm.model.Client
-import com.arthurbatista.registermvvm.model.ClientDAO
-import com.arthurbatista.registermvvm.model.ClientDataBase
+import android.util.Log
+import com.arthurbatista.registermvp.model.cep.CEP
+import com.arthurbatista.registermvp.model.cep.RetrofitInitializer
+import com.arthurbatista.registermvvm.model.client.Client
+import com.arthurbatista.registermvvm.model.client.ClientDAO
+import com.arthurbatista.registermvvm.model.client.ClientDataBase
+import retrofit2.Call
+import retrofit2.Response
+import javax.security.auth.callback.Callback
 
-class ClientRepository{
+class ClientRepository(application: Application) {
 
-    var clientDAO: ClientDAO? = null
-    var allClients: LiveData<List<Client>>? = null
+    private var clientDAO: ClientDAO? = null
+    private var allClients: LiveData<List<Client>>? = null
+    private var clientCEP: CEP? = null
 
-    constructor(application: Application){
+    init {
         val clientDataBase = ClientDataBase.getInstance(application)
         clientDAO = clientDataBase!!.clientDAO()
         allClients = clientDAO!!.getAllClients()
@@ -24,7 +31,42 @@ class ClientRepository{
 
     fun updateClient(client: Client){ UpdateClientAsyncTask(this.clientDAO!!).execute(client) }
 
-    fun getAllClients(client: Client) : LiveData<List<Client>>? { return allClients }
+    fun getAllClient(): LiveData<List<Client>>? {
+        Log.i("TESTE_getAllClient", allClients.toString())
+        return allClients
+    }
+
+    fun findCEP(cepToFind: String) : CEP {
+        var retrofitConfig = RetrofitInitializer()
+        val call = retrofitConfig.getCEPService().findCEP(cepToFind)
+
+        call.enqueue(object : retrofit2.Callback<CEP> {
+            override fun onResponse(call: Call<CEP>, response: Response<CEP>) {
+                if(response.isSuccessful){
+                    val returnedCep = response.body()
+                    if (returnedCep != null) {
+                        Log.i("CEP", returnedCep.cep.toString())
+                        TODO("arrumar o retorno do retrofit")
+//                        val responseCep = CEP(
+//                            returnedCep.cep,
+//                            returnedCep.logradouro,
+//                            returnedCep.bairro,
+//                            returnedCep.localidade,
+//                            returnedCep.uf
+//                        )
+
+
+                    }
+                }
+            }
+
+            override fun onFailure(call: Call<CEP>, t: Throwable) {
+
+            }
+        })
+
+        return CEP(null, null, null, null, null)
+    }
 
     class InsertClientAsyncTask(clientDAO: ClientDAO) : AsyncTask<Client, Void, Void>() {
 
@@ -55,6 +97,5 @@ class ClientRepository{
             return null
         }
     }
-
 
 }

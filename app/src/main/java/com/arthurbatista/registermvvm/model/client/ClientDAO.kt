@@ -1,4 +1,4 @@
-package com.arthurbatista.registermvvm.model
+package com.arthurbatista.registermvvm.model.client
 
 import android.arch.lifecycle.LiveData
 import android.arch.persistence.room.*
