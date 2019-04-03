@@ -27,11 +27,26 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
+
+        btnAddClient.setOnClickListener { view ->
+            Snackbar.make(view, "Adicionar Cliente", Snackbar.LENGTH_LONG).show()
+            val intent = Intent(applicationContext, AddClientActivity::class.java)
+            startActivity(intent)
+        }
+
+    }
+
+    override fun onStart() {
+        loadClients()
+        super.onStart()
+    }
+
+    private fun loadClients() {
         val recyclerView: RecyclerView = recyclerView_Clients
         recyclerView.layoutManager = LinearLayoutManager(applicationContext)
         recyclerView.setHasFixedSize(true)
 
-        val clientAdapter = ClientAdapter(){ userItem: Client -> itemClicked(userItem)}
+        val clientAdapter = ClientAdapter { userItem: Client -> itemClicked(userItem)}
         recyclerView.adapter = clientAdapter
 
         clientViewModel = ViewModelProviders.of(this@MainActivity).get(ClientViewModel::class.java)
@@ -41,11 +56,7 @@ class MainActivity : AppCompatActivity() {
             }
         } )
 
-        btnAddClient.setOnClickListener { view ->
-            Snackbar.make(view, "Adicionar Cliente", Snackbar.LENGTH_LONG).show()
-            val intent = Intent(applicationContext, AddClientActivity::class.java)
-            startActivity(intent)
-        }
+
 
         ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
             0,
@@ -58,10 +69,15 @@ class MainActivity : AppCompatActivity() {
             ): Boolean { return false }
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                if(confirmDelete(clientAdapter.getClientPosition(viewHolder.adapterPosition))){
-                    clientViewModel!!.delete(clientAdapter.getClientPosition(viewHolder.adapterPosition))
-                    Toast.makeText(this@MainActivity, "Cliente excluido", Toast.LENGTH_SHORT).show()
+                val userToDelete = clientAdapter.getClientPosition(viewHolder.adapterPosition)
+                val dialog = AlertDialog.Builder(this@MainActivity)
+                dialog.setTitle("Confirmar exclusão")
+                dialog.setMessage("Deseja excluir o usuário: " + userToDelete.nome + "?")
+                dialog.setPositiveButton("Sim") { _, _ ->
+                    clientViewModel!!.delete(userToDelete)
                 }
+                dialog.setNegativeButton("Não", null)
+                dialog.show()
             }
         }).attachToRecyclerView(recyclerView)
     }
@@ -70,22 +86,6 @@ class MainActivity : AppCompatActivity() {
         val userEditIntent = Intent(this, AddClientActivity::class.java)
         userEditIntent.putExtra("CLIENT", clickedUser)
         startActivity(userEditIntent)
-    }
-
-    private fun confirmDelete(clientToDelete: Client): Boolean {
-        var result = false
-        //abrir dialog
-        val dialog = AlertDialog.Builder(this@MainActivity)
-        dialog.setTitle("Confirmar exclusão")
-        dialog.setMessage("Deseja excluir o usuário: " + clientToDelete.nome + "?")
-        dialog.setPositiveButton("Sim") { _, _ ->
-            result = true
-        }
-        dialog.setNegativeButton("Não") { _, _ ->
-            result = false
-        }
-        dialog.show()
-        return result
     }
 
 

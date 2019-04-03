@@ -1,5 +1,7 @@
 package com.arthurbatista.registermvvm.view
 
+import android.arch.lifecycle.Observer
+import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AlertDialog
@@ -9,15 +11,12 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.Toast
 import com.arthurbatista.registermvvm.R
 import com.arthurbatista.registermvvm.model.client.Client
 import com.arthurbatista.registermvvm.viewmodel.ClientViewModel
 import kotlinx.android.synthetic.main.activity_add_client.*
+import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 class AddClientActivity : AppCompatActivity() {
 
@@ -45,7 +44,24 @@ class AddClientActivity : AppCompatActivity() {
         editCEP.onFocusChangeListener = View.OnFocusChangeListener { view, hasFocus ->
             if (!hasFocus) {
                 Snackbar.make(view, "Buscando CEP", Snackbar.LENGTH_LONG).show()
-                findClientCEP(editCEP.text.toString())
+
+                val rawCEP= editCEP.text.toString()
+                //clientViewModel = ClientViewModel(application)
+                clientViewModel = ViewModelProviders.of(this@AddClientActivity).get(ClientViewModel::class.java)
+                clientViewModel!!.findCEP(rawCEP)
+
+                clientViewModel!!.findCEP(rawCEP)
+                doAsync {
+                    var cepFound = clientViewModel!!.getCep()
+                    while(cepFound == null) { /*OBS: GAMBIARRA*/
+                        cepFound = clientViewModel!!.getCep()
+                    }
+                    editLogradouro.setText(cepFound.logradouro)
+                    editBairro.setText(cepFound.bairro)
+                    editCidade.setText(cepFound.localidade)
+                    editEstado.setText(cepFound.uf)
+                }
+
             }
         }
 
@@ -128,13 +144,30 @@ class AddClientActivity : AppCompatActivity() {
 
     fun findClientCEP(cep: String){
         clientViewModel = ClientViewModel(application)
-        clientViewModel!!.findCEP(cep)
-        TODO("finalizar retrofit")
 
-//        editLogradouro.setText(cep.getLogradouro())
-//        editBairro.setText(cep.getBairro())
-//        editCidade.setText(cep.getLocalidade())
-//        editEstado.setText(cep.getUf())
+//        clientViewModel = ViewModelProviders.of(this@AddClientActivity).get(ClientViewModel::class.java)
+        val clientCep = clientViewModel!!.findCEP(cep)
+        Log.i("TESTE_CEP", "r: $clientCep")
+
+        if (clientCep != null) {
+            editLogradouro.setText(clientCep.logradouro.toString())
+            editBairro.setText(clientCep.bairro.toString())
+            editCidade.setText(clientCep.localidade.toString())
+            editEstado.setText(clientCep.uf.toString())
+        }
+
+/*        clientViewModel!!.findCEP(cep)!!.observe(this, Observer {
+            Log.i("TESTE_CEP", "Observer")
+            if (it != null) {
+                Log.i("TESTE_CEP", it.logradouro + " " + it.bairro)
+                editLogradouro.setText(it.logradouro)
+                editBairro.setText(it.bairro)
+                editCidade.setText(it.localidade)
+                editEstado.setText(it.uf)
+            }else{
+                Log.i("TESTE_CEP", "CEP não encontrado")
+            }
+        } )*/
     }
 
     private fun validarCampos(): Boolean {

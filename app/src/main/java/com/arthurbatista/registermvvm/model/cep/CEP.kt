@@ -1,4 +1,4 @@
-package com.arthurbatista.registermvp.model.cep
+package com.arthurbatista.registermvvm.model.cep
 
 class CEP(
     var cep: String?,
@@ -7,3 +7,6 @@ class CEP(
     var localidade: String?,
     var uf: String?
 )
+
+
+
